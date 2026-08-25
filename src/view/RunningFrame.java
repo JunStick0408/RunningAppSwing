@@ -1,7 +1,6 @@
 package view;
 
 import java.awt.BorderLayout;
-import java.awt.GridLayout;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
@@ -16,50 +15,44 @@ import javax.swing.JTextField;
 public class RunningFrame extends JFrame { // ← extends JFrame を書いた時点で、RunningFrame クラス自身が1つのウィンドウ枠そのものになっています。
 
 	//	入力用のテキストフィールド（Contolollerから値を読み取る為にpublicにしている）
-	public JTextField disrtanceField = new JTextField();
-	public JTextField durationField = new JTextField();
-	public JTextField stepsField = new JTextField();
-	public JTextField memoField = new JTextField();
-	public JTextField dateField = new JTextField("2026-08-21"); // 初期値は今日の日付
+	public JTextField idField = new JTextField(5);
 
-	//	ボタン一覧表示用の共通コンポーネント
-	public JButton addButton = new JButton("記録を追加する");
-	public DefaultListModel<String> ListModel = new DefaultListModel<>(); // model
+	//	新規登録ダイアログを開くボタン
+	public JButton openDialogButton = new JButton("新規記録を追加する");
+
+	// 削除用エリアのパーツ
+	public JButton deleteButton = new JButton("削除する");
+
+	// 一覧表示用の共通コンポーネント
+	public DefaultListModel<String> ListModel = new DefaultListModel<>(); // model コントローラーのupdateメソッドでこのモデル内にaddされる
 	public JList<String> recordList = new JList<>(ListModel); // 画面に表示される部分。modelのセットで画面にmodelを映せる。
 
 	public RunningFrame() {
 		// 1. ウィンドウ全体の基本設定
 		setTitle("ランニング記録アプリ");
-		setSize(500, 450);
+		setSize(600, 550);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // ×で閉じる処理
 		setLocationRelativeTo(null); // 画面中央に配置
-		setLayout(new BorderLayout(10, 10)); // 部品同士を10ずつ空ける
+		setLayout(new BorderLayout(10, 10)); // 部品同士を10ずつ空ける 内部コンポのみ
 
-		// 2. 入力フォームエリア（画面の上側：NORTH に配置）
-		JPanel inputPanel = new JPanel(new GridLayout(6, 2, 5, 5)); // 6列2行で幅が5
-		//	setBorder入力エリアに枠線を引く。
-		//	BorderFactory.createTitledBorder「新規記録の入力」という見出し文字列が枠線の一部に埋め込まれた、綺麗なタイトル付き枠線を簡単に作成してくれる
-		inputPanel.setBorder(BorderFactory.createTitledBorder("新規記録の入力"));
+		// 2.操作エリア（画面上部：NORTHに配置）
+		JPanel topPanel = new JPanel(new BorderLayout(10, 10)); // こいつから見た内部のWEST EASTの間隔のこと
+		topPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10)); // コンポの内部間隔
 
-		inputPanel.add(new JLabel("日付（YYYY-MM-DD）:"));
-		inputPanel.add(dateField);
+		// 左側に新規追加画面ボタン
+		topPanel.add(openDialogButton, BorderLayout.WEST);
 
-		inputPanel.add(new JLabel("距離（km）:"));
-		inputPanel.add(disrtanceField);
+		// 右側に削除ボタン topPanel.add～では1機能しか配置できないので、ID記載＆ボタンのため新規コンポ作成
+		// JPanel はデフォルトで FlowLayout（横並び）になるため、
+		// ラベル・入力欄・ボタンの3つが左から順に横1列で並ぶ
+		JPanel deletePanel = new JPanel();
+		deletePanel.add(new JLabel("削除対象ID："));
+		deletePanel.add(idField);
+		deletePanel.add(deleteButton);
+		topPanel.add(deletePanel, BorderLayout.EAST);
 
-		inputPanel.add(new JLabel("時間（分）:"));
-		inputPanel.add(durationField);
-
-		inputPanel.add(new JLabel("歩数:"));
-		inputPanel.add(stepsField);
-
-		inputPanel.add(new JLabel("メモ:"));
-		inputPanel.add(memoField);
-
-		inputPanel.add(addButton); // ボタン配置
-
-		//　上部に固定（高さは部品のサイズに合わせる）横幅はいっぱいに自動で広がります。		
-		add(inputPanel, BorderLayout.NORTH); // 上部に配置
+		// 上部に配置
+		add(topPanel, BorderLayout.NORTH);
 
 		//	3.走行履歴表示エリア（画面の中央：CENTERに配置）
 		JScrollPane scrollpane = new JScrollPane(recordList);

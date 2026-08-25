@@ -11,7 +11,7 @@ import model.Running;
 
 public class RunningDaoImpl implements RunningDao {
 
-	// 1.DBに記録を1件追加する
+	// 1.INSERT DBに記録を1件追加する
 	@Override
 	public void add(Running running) {
 		// id は自動で番号が振られるため、INSERT文からは除外します
@@ -36,7 +36,7 @@ public class RunningDaoImpl implements RunningDao {
 		}
 	}
 
-	// 元のデータ(db)が外部から直接変更されるのを防ぐため、コピーした新しいリストを返す
+	// 2.SELECT 元のデータ(db)が外部から直接変更されるのを防ぐため、コピーした新しいリストを返す
 	@Override
 	public List<Running> findAll() {
 		List<Running> list = new ArrayList<>();
@@ -66,6 +66,23 @@ public class RunningDaoImpl implements RunningDao {
 		}
 
 		return list;
+	}
+
+	//	3.DELETE
+	@Override
+	public void delete(int id) {
+		String sql = "DELETE FROM running_db.running WHERE id = ?";
+
+		try (Connection conn = DBUtil.getConnection();
+				PreparedStatement ps = conn.prepareStatement(sql)) {
+
+			ps.setInt(1, id);
+
+			ps.executeUpdate();
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 
 }
