@@ -15,7 +15,7 @@ public class RunningController {
 	private final RunningFrame frame;
 	private final RunningDao dao;
 
-	// conflict-testブランチで変更した処理
+	// featureの変更
 	public RunningController(RunningFrame frame, RunningDao dao) {
 		super();
 		this.frame = frame;
