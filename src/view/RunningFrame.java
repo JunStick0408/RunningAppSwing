@@ -3,14 +3,14 @@ package view;
 import java.awt.BorderLayout;
 
 import javax.swing.BorderFactory;
-import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.table.DefaultTableModel;
 
 public class RunningFrame extends JFrame { // ← extends JFrame を書いた時点で、RunningFrame クラス自身が1つのウィンドウ枠そのものになっています。
 
@@ -23,9 +23,15 @@ public class RunningFrame extends JFrame { // ← extends JFrame を書いた時
 	// 削除用エリアのパーツ
 	public JButton deleteButton = new JButton("削除する");
 
-	// 一覧表示用の共通コンポーネント
-	public DefaultListModel<String> ListModel = new DefaultListModel<>(); // model コントローラーのupdateメソッドでこのモデル内にaddされる
-	public JList<String> recordList = new JList<>(ListModel); // 画面に表示される部分。modelのセットで画面にmodelを映せる。
+	// カラム名
+	public String[] columnNames = { "日付", "距離", "時間", "歩数", "メモ", };
+
+	// データの管理モデルを作成
+	// columnNamesの要素数6で、列数がここで決まる
+	public DefaultTableModel tableModel = new DefaultTableModel(columnNames, 0); // model コントローラーのupdateメソッドでこのモデル内にaddされる
+
+	// テーブル本体を作る
+	public JTable recordTable = new JTable(tableModel);
 
 	public RunningFrame() {
 		// 1. ウィンドウ全体の基本設定
@@ -55,7 +61,8 @@ public class RunningFrame extends JFrame { // ← extends JFrame を書いた時
 		add(topPanel, BorderLayout.NORTH);
 
 		//	3.走行履歴表示エリア（画面の中央：CENTERに配置）
-		JScrollPane scrollpane = new JScrollPane(recordList);
+		// 単にrecordTableだけを配置するとタイトルが表示されないし、スクロールバーが出ないのでセットで包む
+		JScrollPane scrollpane = new JScrollPane(recordTable);
 		scrollpane.setBorder(BorderFactory.createTitledBorder("走行履歴"));
 
 		//　サイズ: NORTH（および他の方角）が占有した残りのエリア全体をすべて埋めるように自動拡大されます。

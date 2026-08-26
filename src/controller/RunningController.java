@@ -15,7 +15,6 @@ public class RunningController {
 	private final RunningFrame frame;
 	private final RunningDao dao;
 
-	// masterの変更
 	public RunningController(RunningFrame frame, RunningDao dao) {
 		super();
 		this.frame = frame;
@@ -103,22 +102,24 @@ public class RunningController {
 	}
 
 	public void updateListView() {
-		// リストを空にする
-		frame.ListModel.clear();
+		// テーブルを空にする 行数0なので
+		frame.tableModel.setRowCount(0);
 
 		// 最新のデータを取得して、1件ずつリストに追加
 		List<Running> list = dao.findAll();
 		for (Running r : list) {
-			/*
-			 * 1. String.format(...) （文字の整形）
-			 *getRunDate() や getDistance() などのデータを、決まったフォーマットの文字列に埋め込んで組み立てています。
-			 *%s：文字列・日付・Decimal（文字として埋め込み）
-			 *%d：整数（int 型の数値）
-			 *"[" + r.getRunDate() + "] 距離: " + ...でも可
-			 */
-			String itemText = String.format("ID: %d | [%s] 距離: %s km | 時間: %d 分 | 歩数: %d 歩 | メモ: %s",
-					r.getId(), r.getRunDate(), r.getDistance(), r.getDuration(), r.getSteps(), r.getMemo());
-			frame.ListModel.addElement(itemText);
+			// 1件分のデータを配列にまとめる
+			// タイトルのcolumnNames の要素数と合わせる必要あり
+			Object[] rowData = {
+					r.getRunDate(),
+					r.getDistance(),
+					r.getDuration(),
+					r.getSteps(),
+					r.getMemo()
+			};
+
+			// ビューのモデルに追加
+			frame.tableModel.addRow(rowData);
 		}
 
 	}
