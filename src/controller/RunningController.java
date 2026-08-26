@@ -15,6 +15,7 @@ public class RunningController {
 	private final RunningFrame frame;
 	private final RunningDao dao;
 
+	// masterブランチで変更した処理
 	public RunningController(RunningFrame frame, RunningDao dao) {
 		super();
 		this.frame = frame;
