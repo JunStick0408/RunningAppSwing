@@ -10,9 +10,9 @@ import java.util.List;
 
 import dao.RunningDao;
 import model.Running;
-import view.RunningDialog;
 import view.RunningEditDialog;
 import view.RunningFrame;
+import view.RunningNewDialog;
 
 public class RunningController {
 	private final RunningFrame frame;
@@ -72,7 +72,7 @@ public class RunningController {
 	// ★ 1. ダイアログを開いてイベントを登録するメソッド
 	public void openAddDialog() {
 		// メモリ上に部品を準備（まだ表示されない）
-		RunningDialog dialog = new RunningDialog(frame);
+		RunningNewDialog dialog = new RunningNewDialog(frame);
 
 		// ダイアログ内の新規ボタン押下時に起動
 		// あくまで押下時なので、次の処理に移って先に画面を表示
@@ -89,18 +89,22 @@ public class RunningController {
 	}
 
 	// ★ 2. 実際の登録処理を担当するメソッド（スッキリ！）
-	public void executeAdd(RunningDialog dialog) {
+	public void executeAdd(RunningNewDialog dialog) {
 
 		try {
+			// 1. JSpinner から日付（java.util.Date）を取得し、java.sql.Date に変換
+			java.util.Date utilDate = (java.util.Date) dialog.dateSpinner.getValue();
+			Date runDate = new Date(utilDate.getTime());
+
 			// 1.画面の入力フィールドから文字列を取得
-			String dateStr = dialog.dateField.getText();
+			//			String dateStr = dialog.dateField.getText();
 			String disrtanceStr = dialog.distanceField.getText();
 			String durationeStr = dialog.durationField.getText();
 			String stepsStr = dialog.stepsField.getText();
 			String memoStr = dialog.memoField.getText();
 
 			// 2.適切な型に変換
-			Date runDate = Date.valueOf(dateStr);
+			//			Date runDate = Date.valueOf(dateStr);
 			BigDecimal distance = new BigDecimal(disrtanceStr);
 			int duration = Integer.parseInt(durationeStr);
 			int steps = Integer.parseInt(stepsStr);

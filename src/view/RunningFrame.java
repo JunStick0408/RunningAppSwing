@@ -31,7 +31,7 @@ public class RunningFrame extends JFrame { // ← extends JFrame を書いた時
 	public DefaultTableModel tableModel = new DefaultTableModel(columnNames, 0) {
 		@Override
 		public boolean isCellEditable(int row, int column) {
-			return false;  // 全てのセルを直接編集不可にする。 オーバーライドしないと個別編集が優先されて編集画面が開かない
+			return false; // 全てのセルを直接編集不可にする。 オーバーライドしないと個別編集が優先されて編集画面が開かない
 		}
 	}; // model コントローラーのupdateメソッドでこのモデル内にaddされる
 
