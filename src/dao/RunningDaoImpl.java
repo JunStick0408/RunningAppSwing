@@ -85,4 +85,26 @@ public class RunningDaoImpl implements RunningDao {
 		}
 	}
 
+	// 4.UPDATE
+	@Override //インタフェースのメソッドを実装してることを明確にするため記載
+	public void update(Running running) {
+		String sql = "UPDATE running_db.running SET distance = ?, duration = ?, steps = ?, memo = ?, run_date = ? WHERE id = ? ";
+
+		try (Connection conn = DBUtil.getConnection();
+				PreparedStatement ps = conn.prepareStatement(sql)) {
+			ps.setBigDecimal(1, running.getDistance());
+			ps.setInt(2, running.getDuration());
+			ps.setInt(3, running.getSteps());
+			ps.setString(4, running.getMemo());
+			ps.setDate(5, running.getRunDate());
+			ps.setInt(6, running.getId());
+
+			ps.executeUpdate();
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+	}
+
 }

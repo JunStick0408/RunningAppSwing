@@ -1,7 +1,6 @@
 package view;
 
 import java.awt.BorderLayout;
-import java.awt.Frame;
 import java.awt.GridLayout;
 
 import javax.swing.BorderFactory;
@@ -27,7 +26,7 @@ public class RunningDialog extends JDialog {
 
 	// このダイアログ（子画面）を呼び出すときに、親画面である RunningFrame（JFrame）を渡してもらうための引数として定義
 	// コンストラクタなのでメイン画面の新規ボタンが押されたタイミングでnewしてコンストラクタ起動
-	public RunningDialog(Frame owner) {
+	public RunningDialog(RunningFrame owner) {
 		// 親画面（owner）、タイトル文字列（title）、モーダルにするか（modal = true）の3つを渡す型を選んで書いています。
 		// superを省略すると引数無しsuper()になる
 		// でも引数無しだと何の情報か分かんないからsuper(owner, title, modal)を書くのが定石

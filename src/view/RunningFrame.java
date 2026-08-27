@@ -28,7 +28,12 @@ public class RunningFrame extends JFrame { // ← extends JFrame を書いた時
 
 	// データの管理モデルを作成
 	// columnNamesの要素数6で、列数がここで決まる
-	public DefaultTableModel tableModel = new DefaultTableModel(columnNames, 0); // model コントローラーのupdateメソッドでこのモデル内にaddされる
+	public DefaultTableModel tableModel = new DefaultTableModel(columnNames, 0) {
+		@Override
+		public boolean isCellEditable(int row, int column) {
+			return false;  // 全てのセルを直接編集不可にする。 オーバーライドしないと個別編集が優先されて編集画面が開かない
+		}
+	}; // model コントローラーのupdateメソッドでこのモデル内にaddされる
 
 	// テーブル本体を作る
 	public JTable recordTable = new JTable(tableModel);

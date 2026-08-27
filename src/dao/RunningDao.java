@@ -15,4 +15,7 @@ public interface RunningDao {
 
 	//　DELETE
 	void delete(int id);
+
+	// UPDATE
+	void update(Running running);
 }
