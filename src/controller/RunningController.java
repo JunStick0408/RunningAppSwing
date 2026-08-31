@@ -8,6 +8,8 @@ import java.math.BigDecimal;
 import java.sql.Date;
 import java.util.List;
 
+import javax.swing.JOptionPane;
+
 import dao.RunningDao;
 import model.Running;
 import view.RunningEditDialog;
@@ -152,22 +154,37 @@ public class RunningController {
 	public void deleteRunningRecord() {
 
 		try {
-			// 1. 画面の ID フィールドから文字列を取得して数値に変換
-			String idStr = frame.idField.getText();
-			int id = Integer.parseInt(idStr);
+			// 1.テーブルで選択されている行番号を取得
+			int selectedRow = frame.recordTable.getSelectedRow();
 
-			// 2. 削除実行
-			dao.delete(id);
+			// 未選択の場合は処理を中断
+			if (selectedRow == -1) {
+				JOptionPane.showMessageDialog(frame, "削除する行を選択してください");
+				return;
+			}
 
-			// 3. 画面の表示を更新
-			updateListView();
+			// 全件リストを作る
+			List<Running> list = dao.findAll();
 
-			//	4. 入力フィールドをクリア
-			frame.idField.setText("");
+			// 取得した選択行のインデックスを入れることで指定の1件のみ取得
+			Running target = list.get(selectedRow);
 
-			// Integer.parseInt("abc") や Integer.parseInt("")（空文字）を実行したときに発生します。これをつかまえる（catch）ことで、「数字を入力してください」といった具体的な案内を出せます。
-		} catch (NumberFormatException e) {
-			System.out.println("削除対象のIDを正しい数値で入力してください。");
+			// 該当行のidを取得する
+			int id = target.getId();
+
+			// 確認ダイアログを表示する 画面をポップアップさせて、ボタンを押させると最終的にどのボタンが押されたかのintが残るって処理
+			int option = JOptionPane.showConfirmDialog(frame, "選択した記録（日付: " + target.getRunDate() + "）を本当に削除しますか？",
+					"削除の確認", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+
+			// YESと一致していたら
+			if (option == JOptionPane.YES_OPTION) {
+				// 2. 削除実行
+				dao.delete(id);
+
+				// 3. 画面の表示を更新
+				updateListView();
+			}
+
 			// NumberFormatException 以外の「想定外のあらゆるエラー（DB接続切れなど）」をまとめて拾うセーフティネットとして機能します。複数 catch を並べる場合、一番最後に書くルールになっています。
 		} catch (Exception e) {
 			// 例えば Integer.parseInt("abc") でエラーが出た場合、e.getMessage() を呼ぶと "For input string: \"abc\"" という具体的なエラー内容が文字列で手に入ります。コンソールや画面にエラー理由を出力したいときに使います。

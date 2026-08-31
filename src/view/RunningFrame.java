@@ -5,7 +5,6 @@ import java.awt.BorderLayout;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -57,8 +56,8 @@ public class RunningFrame extends JFrame { // ← extends JFrame を書いた時
 		// JPanel はデフォルトで FlowLayout（横並び）になるため、
 		// ラベル・入力欄・ボタンの3つが左から順に横1列で並ぶ
 		JPanel deletePanel = new JPanel();
-		deletePanel.add(new JLabel("削除対象ID："));
-		deletePanel.add(idField);
+		//		deletePanel.add(new JLabel("削除対象ID："));
+		//		deletePanel.add(idField);
 		deletePanel.add(deleteButton);
 		topPanel.add(deletePanel, BorderLayout.EAST);
 
