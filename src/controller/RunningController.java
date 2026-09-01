@@ -92,6 +92,68 @@ public class RunningController {
 
 	// ★ 2. 実際の登録処理を担当するメソッド（スッキリ！）
 	public void executeAdd(RunningNewDialog dialog) {
+		// 未入力チェック
+		if (dialog.distanceField.getText().trim().isEmpty()) {
+			JOptionPane.showMessageDialog(dialog, "距離を入力してください。", "入力エラー", JOptionPane.ERROR_MESSAGE);
+			return;
+		} else if (dialog.durationField.getText().trim().isEmpty()) {
+			JOptionPane.showMessageDialog(dialog, "時間を入力してください。", "入力エラー", JOptionPane.ERROR_MESSAGE);
+			return;
+		} else if (dialog.stepsField.getText().trim().isEmpty()) {
+			JOptionPane.showMessageDialog(dialog, "歩数を入力してください。", "入力エラー", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+
+		// 距離の入力値チェック
+		BigDecimal distance;
+		try {
+			// 編集画面で入力された文字が数字以外なら変換出来ずにcatchの処理に移行
+			// BigDecimalにはparseは無いのでこの書き方で変換するしかない
+			distance = new BigDecimal(dialog.distanceField.getText().trim());
+
+			// int double は生の値（プリミティブ型）なのでそのままdistance<0のように使えるが
+			// BigDecimal String は多機能型（オブジェクト型）なので箱に対して<>= を使うと箱には使えずエラーとなるので、専用の比較メソッドを使う。
+			if (distance.compareTo(BigDecimal.ZERO) < 0) {
+				JOptionPane.showMessageDialog(dialog, "距離は0以上を入力してください。", "入力エラー", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+
+		} catch (NumberFormatException e) {
+			JOptionPane.showMessageDialog(dialog, "距離は半角数字で入力してください。", "入力エラー", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+
+		// 時間の入力値チェック
+		int duration;
+		try {
+			// 編集画面で入力された文字が数字以外なら変換出来ずにcatchの処理に移行
+			duration = Integer.parseInt(dialog.durationField.getText().trim());
+
+			if (duration < 0) {
+				JOptionPane.showMessageDialog(dialog, "時間は0以上を入力してください。", "入力エラー", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+
+		} catch (NumberFormatException e) {
+			JOptionPane.showMessageDialog(dialog, "時間は半角数字で入力してください。", "入力エラー", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+
+		// 歩数の入力値チェック
+		int steps;
+		try {
+			// 編集画面で入力された文字が数字以外なら変換出来ずにcatchの処理に移行
+			steps = Integer.parseInt(dialog.stepsField.getText().trim());
+
+			if (steps < 0) {
+				JOptionPane.showMessageDialog(dialog, "歩数は0以上を入力してください。", "入力エラー", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+
+		} catch (NumberFormatException e) {
+			JOptionPane.showMessageDialog(dialog, "歩数は半角数字で入力してください。", "入力エラー", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
 
 		try {
 			// 1. JSpinner から日付（java.util.Date）を取得し、java.sql.Date に変換
@@ -99,17 +161,7 @@ public class RunningController {
 			Date runDate = new Date(utilDate.getTime());
 
 			// 1.画面の入力フィールドから文字列を取得
-			//			String dateStr = dialog.dateField.getText();
-			String disrtanceStr = dialog.distanceField.getText();
-			String durationeStr = dialog.durationField.getText();
-			String stepsStr = dialog.stepsField.getText();
 			String memoStr = dialog.memoField.getText();
-
-			// 2.適切な型に変換
-			//			Date runDate = Date.valueOf(dateStr);
-			BigDecimal distance = new BigDecimal(disrtanceStr);
-			int duration = Integer.parseInt(durationeStr);
-			int steps = Integer.parseInt(stepsStr);
 
 			// 3.Modelオブジェクトの作成（IDは仮で0を設定）
 			Running running = new Running(0, distance, duration, steps, memoStr, runDate);
@@ -157,7 +209,7 @@ public class RunningController {
 			// 1.テーブルで選択されている行番号を取得
 			int selectedRow = frame.recordTable.getSelectedRow();
 
-			// 未選択の場合は処理を中断
+			// 未選択の場合は処理を中断 showMessageDialogはメッセージのみ表示
 			if (selectedRow == -1) {
 				JOptionPane.showMessageDialog(frame, "削除する行を選択してください");
 				return;
@@ -173,6 +225,7 @@ public class RunningController {
 			int id = target.getId();
 
 			// 確認ダイアログを表示する 画面をポップアップさせて、ボタンを押させると最終的にどのボタンが押されたかのintが残るって処理
+			// showConfirmDialogは、はい/いいえを表示
 			int option = JOptionPane.showConfirmDialog(frame, "選択した記録（日付: " + target.getRunDate() + "）を本当に削除しますか？",
 					"削除の確認", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 
@@ -227,21 +280,89 @@ public class RunningController {
 	// ★ 2. 実際の編集処理を担当するメソッド（スッキリ！）
 	public void executeEdit(RunningEditDialog dialog) {
 
+		// 未入力チェック
+		if (dialog.dateField.getText().trim().isEmpty()) {
+			JOptionPane.showMessageDialog(dialog, "日付を入力してください", "入力エラー", JOptionPane.ERROR_MESSAGE);
+			return;
+		} else if (dialog.distanceField.getText().trim().isEmpty()) {
+			JOptionPane.showMessageDialog(dialog, "距離を入力してください。", "入力エラー", JOptionPane.ERROR_MESSAGE);
+			return;
+		} else if (dialog.durationField.getText().trim().isEmpty()) {
+			JOptionPane.showMessageDialog(dialog, "時間を入力してください。", "入力エラー", JOptionPane.ERROR_MESSAGE);
+			return;
+		} else if (dialog.stepsField.getText().trim().isEmpty()) {
+			JOptionPane.showMessageDialog(dialog, "歩数を入力してください。", "入力エラー", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+
+		// 日付の入力値チェック
+		Date runDate;
+		try {
+			// Date.valueOf()は不正値を自動で判別してくれる。
+			runDate = Date.valueOf(dialog.dateField.getText().trim());
+		} catch (IllegalArgumentException e) {
+			JOptionPane.showMessageDialog(dialog, "日付は yyyy-MM-dd の形式で入力してください。", "入力エラー", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+
+		// 距離の入力値チェック
+		BigDecimal distance;
+		try {
+			// 編集画面で入力された文字が数字以外なら変換出来ずにcatchの処理に移行
+			// BigDecimalにはparseは無いのでこの書き方で変換するしかない
+			distance = new BigDecimal(dialog.distanceField.getText().trim());
+
+			// int double は生の値（プリミティブ型）なのでそのままdistance<0のように使えるが
+			// BigDecimal String は多機能型（オブジェクト型）なので箱に対して<>= を使うと箱には使えずエラーとなるので、専用の比較メソッドを使う。
+			if (distance.compareTo(BigDecimal.ZERO) < 0) {
+				JOptionPane.showMessageDialog(dialog, "距離は0以上を入力してください。", "入力エラー", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+
+		} catch (NumberFormatException e) {
+			JOptionPane.showMessageDialog(dialog, "距離は半角数字で入力してください。", "入力エラー", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+
+		// 時間の入力値チェック
+		int duration;
+		try {
+			// 編集画面で入力された文字が数字以外なら変換出来ずにcatchの処理に移行 parseIntにはNumberFormatExceptionに投げるようになっている。
+			duration = Integer.parseInt(dialog.durationField.getText().trim());
+
+			if (duration < 0) {
+				JOptionPane.showMessageDialog(dialog, "時間は0以上を入力してください。", "入力エラー", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+
+		} catch (NumberFormatException e) {
+			JOptionPane.showMessageDialog(dialog, "時間は半角数字で入力してください。", "入力エラー", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+
+		// 歩数の入力値チェック
+		int steps;
+		try {
+			// 編集画面で入力された文字が数字以外なら変換出来ずにcatchの処理に移行
+			steps = Integer.parseInt(dialog.stepsField.getText().trim());
+
+			if (steps < 0) {
+				JOptionPane.showMessageDialog(dialog, "歩数は0以上を入力してください。", "入力エラー", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+
+		} catch (NumberFormatException e) {
+			JOptionPane.showMessageDialog(dialog, "歩数は半角数字で入力してください。", "入力エラー", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+
 		try {
 			// 1.画面の入力フィールドから文字列を取得
 			String idStr = dialog.idField.getText();
-			String dateStr = dialog.dateField.getText();
-			String disrtanceStr = dialog.distanceField.getText();
-			String durationeStr = dialog.durationField.getText();
-			String stepsStr = dialog.stepsField.getText();
 			String memoStr = dialog.memoField.getText();
 
 			// 2.適切な型に変換
 			int id = Integer.parseInt(idStr);
-			Date runDate = Date.valueOf(dateStr);
-			BigDecimal distance = new BigDecimal(disrtanceStr);
-			int duration = Integer.parseInt(durationeStr);
-			int steps = Integer.parseInt(stepsStr);
 
 			// 3.Modelオブジェクトの作成（IDは仮で0を設定）
 			Running running = new Running(id, distance, duration, steps, memoStr, runDate);
@@ -256,7 +377,7 @@ public class RunningController {
 			dialog.dispose();
 
 		} catch (Exception e) {
-			System.out.println("入力エラーが発生しました" + e.getMessage());
+			System.out.println("更新処理中にエラーが発生しました" + e.getMessage());
 		}
 	}
 
