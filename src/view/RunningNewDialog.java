@@ -55,7 +55,7 @@ public class RunningNewDialog extends JDialog {
 		JPanel inputPanel = new JPanel(new GridLayout(6, 2, 5, 5)); // 6行2列で幅が5
 		inputPanel.setBorder(BorderFactory.createTitledBorder("データの入力"));
 
-		inputPanel.add(new JLabel("日付（YYYY-MM-DD）:"));
+		inputPanel.add(new JLabel("日付（yyyy-MM-dd）:"));
 		//		inputPanel.add(dateField);
 		inputPanel.add(dateSpinner);
 

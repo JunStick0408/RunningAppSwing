@@ -5,7 +5,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.math.BigDecimal;
-import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 import javax.swing.JOptionPane;
@@ -93,7 +93,16 @@ public class RunningController {
 	// ★ 2. 実際の登録処理を担当するメソッド（スッキリ！）
 	public void executeAdd(RunningNewDialog dialog) {
 		// 未入力チェック
-		if (dialog.distanceField.getText().trim().isEmpty()) {
+		// スピナーから取り出すときはこの形にする
+		java.util.Date utilDate = (java.util.Date) dialog.dateSpinner.getValue();
+		// addのコンストラクタ用の形に変換
+		java.sql.Date runDate = new java.sql.Date(utilDate.getTime());
+
+		LocalDate today = LocalDate.now();
+		// java.sql.Dateはオブジェクトなので専用メソッドで比較する 今日の日付以降が入力されてればエラー
+		if (runDate.toLocalDate().isAfter(today)) {
+			JOptionPane.showMessageDialog(dialog, "未来の日付は入力できません。", "入力エラー", JOptionPane.ERROR_MESSAGE);
+		} else if (dialog.distanceField.getText().trim().isEmpty()) {
 			JOptionPane.showMessageDialog(dialog, "距離を入力してください。", "入力エラー", JOptionPane.ERROR_MESSAGE);
 			return;
 		} else if (dialog.durationField.getText().trim().isEmpty()) {
@@ -156,9 +165,6 @@ public class RunningController {
 		}
 
 		try {
-			// 1. JSpinner から日付（java.util.Date）を取得し、java.sql.Date に変換
-			java.util.Date utilDate = (java.util.Date) dialog.dateSpinner.getValue();
-			Date runDate = new Date(utilDate.getTime());
 
 			// 1.画面の入力フィールドから文字列を取得
 			String memoStr = dialog.memoField.getText();
@@ -257,7 +263,7 @@ public class RunningController {
 
 		// 編集画面に表示する初期値をセット
 		dialog.idField.setText(String.valueOf(target.getId()));
-		dialog.dateField.setText(String.valueOf(target.getRunDate()));
+		dialog.dateSpinner.setValue(target.getRunDate());
 		dialog.distanceField.setText(String.valueOf(target.getDistance()));
 		dialog.durationField.setText(String.valueOf(target.getDuration()));
 		dialog.stepsField.setText(String.valueOf(target.getSteps()));
@@ -280,9 +286,15 @@ public class RunningController {
 	// ★ 2. 実際の編集処理を担当するメソッド（スッキリ！）
 	public void executeEdit(RunningEditDialog dialog) {
 
+		// スピナーから取り出すときはこの形にする
+		java.util.Date utilDate = (java.util.Date) dialog.dateSpinner.getValue();
+		// addのコンストラクタ用の形に変換
+		java.sql.Date runDate = new java.sql.Date(utilDate.getTime());
+
+		LocalDate today = LocalDate.now();
 		// 未入力チェック
-		if (dialog.dateField.getText().trim().isEmpty()) {
-			JOptionPane.showMessageDialog(dialog, "日付を入力してください", "入力エラー", JOptionPane.ERROR_MESSAGE);
+		if (runDate.toLocalDate().isAfter(today)) {
+			JOptionPane.showMessageDialog(dialog, "未来の日付は入力できません。", "入力エラー", JOptionPane.ERROR_MESSAGE);
 			return;
 		} else if (dialog.distanceField.getText().trim().isEmpty()) {
 			JOptionPane.showMessageDialog(dialog, "距離を入力してください。", "入力エラー", JOptionPane.ERROR_MESSAGE);
@@ -295,15 +307,7 @@ public class RunningController {
 			return;
 		}
 
-		// 日付の入力値チェック
-		Date runDate;
-		try {
-			// Date.valueOf()は不正値を自動で判別してくれる。
-			runDate = Date.valueOf(dialog.dateField.getText().trim());
-		} catch (IllegalArgumentException e) {
-			JOptionPane.showMessageDialog(dialog, "日付は yyyy-MM-dd の形式で入力してください。", "入力エラー", JOptionPane.ERROR_MESSAGE);
-			return;
-		}
+		// ★スピナーは、ビューでスピナーを使っており、Date型に変換する必要がないのでtry-catchやバリデーションチェックが不要
 
 		// 距離の入力値チェック
 		BigDecimal distance;
@@ -364,7 +368,7 @@ public class RunningController {
 			// 2.適切な型に変換
 			int id = Integer.parseInt(idStr);
 
-			// 3.Modelオブジェクトの作成（IDは仮で0を設定）
+			// 3.Modelオブジェクトの作成
 			Running running = new Running(id, distance, duration, steps, memoStr, runDate);
 
 			// 4.daoを使って保存・追加
