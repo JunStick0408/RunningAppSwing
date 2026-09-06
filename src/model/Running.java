@@ -16,6 +16,8 @@ public class Running implements Serializable {
 	private int steps;
 	private String memo;
 	private Date runDate;
+	private String timeSlot;
+	private int weather;
 
 	//	引数ありコンストラクタを作ったら、セットでデフォルトコンストラクタも書いておく
 	public Running() {
@@ -23,7 +25,8 @@ public class Running implements Serializable {
 	}
 
 	//	引数ありコンストラクタで初期化処理
-	public Running(int id, BigDecimal distance, int duration, int steps, String memo, Date runDate) {
+	public Running(int id, BigDecimal distance, int duration, int steps, String memo, Date runDate, String timeSlot,
+			int weater) {
 		super();
 		this.id = id;
 		this.distance = distance;
@@ -31,6 +34,8 @@ public class Running implements Serializable {
 		this.steps = steps;
 		this.memo = memo;
 		this.runDate = runDate;
+		this.timeSlot = timeSlot;
+		this.weather = weater;
 	}
 
 	//	ゲッター、セッター
@@ -80,6 +85,22 @@ public class Running implements Serializable {
 
 	public void setRunDate(Date runDate) {
 		this.runDate = runDate;
+	}
+
+	public String getTimeSlot() {
+		return timeSlot;
+	}
+
+	public void setTimeSlot(String timeSlot) {
+		this.timeSlot = timeSlot;
+	}
+
+	public int getWeather() {
+		return weather;
+	}
+
+	public void setWeather(int weater) {
+		this.weather = weater;
 	}
 
 }

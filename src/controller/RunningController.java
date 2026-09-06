@@ -12,6 +12,8 @@ import javax.swing.JOptionPane;
 
 import dao.RunningDao;
 import model.Running;
+import model.TimeSlot;
+import model.Weather;
 import view.RunningEditDialog;
 import view.RunningFrame;
 import view.RunningNewDialog;
@@ -25,7 +27,7 @@ public class RunningController {
 		this.frame = frame;
 		this.dao = dao;
 
-		//1.編集ボタン押下時に起動する
+		//1.新規ボタン押下時に起動する
 		// ボタンに「クリックされた時の監視役（リスナー）」をあらかじめ登録しておく
 		//	new ActionListener() { ... } で「ボタンが押されたときの指示書（リスナー）」を1つ作ります。
 		//	それを addActionListener でボタンにあらかじめ貼り付けて（登録して）おきます。	
@@ -67,7 +69,20 @@ public class RunningController {
 			}
 		});
 
-		// 4.画面立ち上げ時に起動して全件表示
+		// 4.編集ボタン押下時に起動する
+		this.frame.editButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// ダブルクリックの必要は無し
+				int selectedRow = frame.recordTable.getSelectedRow();
+				// 行が選択されていない場合は -1を返します。
+				// 直接呼び出して、selectedRow==-1のときにエラーメッセージを出す。
+				openEditDialog(selectedRow);
+			}
+		});
+
+		// 5.画面立ち上げ時に起動して全件表示
 		updateListView();
 	}
 
@@ -102,6 +117,7 @@ public class RunningController {
 		// java.sql.Dateはオブジェクトなので専用メソッドで比較する 今日の日付以降が入力されてればエラー
 		if (runDate.toLocalDate().isAfter(today)) {
 			JOptionPane.showMessageDialog(dialog, "未来の日付は入力できません。", "入力エラー", JOptionPane.ERROR_MESSAGE);
+			return;
 		} else if (dialog.distanceField.getText().trim().isEmpty()) {
 			JOptionPane.showMessageDialog(dialog, "距離を入力してください。", "入力エラー", JOptionPane.ERROR_MESSAGE);
 			return;
@@ -169,8 +185,20 @@ public class RunningController {
 			// 1.画面の入力フィールドから文字列を取得
 			String memoStr = dialog.memoField.getText();
 
+			// 時間帯コンボボックス(Enum型)から選択されたEnumを取り出して、文字列に変換する
+			TimeSlot selectedSlot = (TimeSlot) dialog.timeSlotCombo.getSelectedItem();
+			String timeSlot = (selectedSlot != null) ? selectedSlot.name() : TimeSlot.MORNING.name();
+
+			// ラジオボタンの真偽から、Enumの数値を紐づける
+			int weather = Weather.SUNNY.getCode();
+			if (dialog.cloudyRadio.isSelected()) {
+				weather = Weather.CLOUDY.getCode();
+			} else if (dialog.rainyRadio.isSelected()) {
+				weather = Weather.RAINY.getCode();
+			}
+
 			// 3.Modelオブジェクトの作成（IDは仮で0を設定）
-			Running running = new Running(0, distance, duration, steps, memoStr, runDate);
+			Running running = new Running(0, distance, duration, steps, memoStr, runDate, timeSlot, weather);
 
 			// 4.daoを使って保存・追加
 			dao.add(running);
@@ -193,6 +221,9 @@ public class RunningController {
 		// 最新のデータを取得して、1件ずつリストに追加
 		List<Running> list = dao.findAll();
 		for (Running r : list) {
+			//　DBの値をEnumの定義した定数に変換する & 選ばれたEnum定数のみを返す
+			TimeSlot slot = (r.getTimeSlot() != null) ? TimeSlot.valueOf(r.getTimeSlot()) : TimeSlot.MORNING;
+			Weather weather = Weather.getByCode(r.getWeather());
 			// 1件分のデータを配列にまとめる
 			// タイトルのcolumnNames の要素数と合わせる必要あり
 			Object[] rowData = {
@@ -200,6 +231,8 @@ public class RunningController {
 					r.getDistance(),
 					r.getDuration(),
 					r.getSteps(),
+					slot.getDisplayLabel(), // Enumで設定した日本語になおす
+					weather.getDisplayLabel(), // Enumで設定した日本語になおす
 					r.getMemo()
 			};
 
@@ -253,13 +286,18 @@ public class RunningController {
 
 	// ★ 1. 編集ダイアログを開いてイベントを登録するメソッド
 	public void openEditDialog(int selectedRow) {
+		if (selectedRow == -1) {
+			JOptionPane.showMessageDialog(frame, "編集する行を選択してください。。", "入力エラー", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+
 		// 全件リストを作る
 		List<Running> list = dao.findAll();
 		// マウスリスナー内で取得した選択行のインデックスを入れることで指定の1件のみ取得
 		Running target = list.get(selectedRow);
 
 		// メモリ上に部品を準備（まだ表示されない）
-		RunningEditDialog dialog = new RunningEditDialog(frame);
+		RunningEditDialog dialog = new RunningEditDialog(frame); // コンストラクタ実行され、ラジオボタン「晴れ」が初期trueに
 
 		// 編集画面に表示する初期値をセット
 		dialog.idField.setText(String.valueOf(target.getId()));
@@ -268,6 +306,29 @@ public class RunningController {
 		dialog.durationField.setText(String.valueOf(target.getDuration()));
 		dialog.stepsField.setText(String.valueOf(target.getSteps()));
 		dialog.memoField.setText(target.getMemo());
+
+		if (target.getTimeSlot() != null) {
+			try {
+				// target.getTimeSlot()をEnumに変換
+				// JComboBox<TimeSlot>がEnum型なので、Enumにしないと入らないため
+				dialog.timeSlotCombo.setSelectedItem(TimeSlot.valueOf(target.getTimeSlot()));
+			} catch (IllegalArgumentException e) {
+				System.err.println("未定義の時間帯コードがDBに存在します:" + target.getTimeSlot());
+				// 画面上はデフォルト値（MORNING）を選択させて落ちないようにする
+				dialog.timeSlotCombo.setSelectedItem(TimeSlot.MORNING);
+			}
+		}
+
+		// findAll()で得た初期値をEnumの形に変換する
+		// getByCodeは天気の数値と一致するEnum定数を返すメソッド
+		Weather weatherEnum = Weather.getByCode(target.getWeather());
+		if (weatherEnum == Weather.CLOUDY) {
+			dialog.cloudyRadio.setSelected(true);
+		} else if (weatherEnum == Weather.RAINY) {
+			dialog.rainyRadio.setSelected(true);
+		} else {
+			dialog.sunnyRadio.setSelected(true);
+		}
 
 		// ダイアログ内の新規ボタン押下時に起動
 		// あくまで押下時なので、次の処理に移って先に画面を表示
@@ -368,8 +429,24 @@ public class RunningController {
 			// 2.適切な型に変換
 			int id = Integer.parseInt(idStr);
 
+			// 時間帯コンボボックス(Enum型)から選択されたEnumを取り出して、文字列に変換する
+			TimeSlot selectedSlot = (TimeSlot) dialog.timeSlotCombo.getSelectedItem();
+			// name()はEnumから文字列型を取り出す
+			String timeSlotStr = (selectedSlot != null) ? selectedSlot.name() : TimeSlot.MORNING.name();
+
+			// 天候ラジオボタン（ビュー）からtrue/falseを取得して、Enumを介して数値にする
+			// WeatherEnumのgetCode()で数値に変換できる
+			int weather;
+			if (dialog.cloudyRadio.isSelected()) {
+				weather = Weather.CLOUDY.getCode();
+			} else if (dialog.rainyRadio.isSelected()) {
+				weather = Weather.RAINY.getCode();
+			} else {
+				weather = Weather.SUNNY.getCode();
+			}
+
 			// 3.Modelオブジェクトの作成
-			Running running = new Running(id, distance, duration, steps, memoStr, runDate);
+			Running running = new Running(id, distance, duration, steps, memoStr, runDate, timeSlotStr, weather);
 
 			// 4.daoを使って保存・追加
 			dao.update(running);

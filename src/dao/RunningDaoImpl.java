@@ -16,7 +16,7 @@ public class RunningDaoImpl implements RunningDao {
 	public void add(Running running) {
 		// id は自動で番号が振られるため、INSERT文からは除外します
 		// ? にはシングルクォーテーションを付けません
-		String sql = "INSERT INTO `running_db`.`running` (`distance`, `duration`, `steps`, `memo`, `run_date`) VALUES (?, ?, ?, ?, ?)";
+		String sql = "INSERT INTO `running_db`.`running` (`distance`, `duration`, `steps`, `memo`, `run_date`, time_slot, weather) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
 		try (Connection conn = DBUtil.getConnection(); // 「DBへの専用電話回線をつなぐ（パスを開く）」
 				PreparedStatement ps = conn.prepareStatement(sql)) { // 「送信するSQL（命令文）の下書きを用意する」
@@ -27,11 +27,12 @@ public class RunningDaoImpl implements RunningDao {
 			ps.setInt(3, running.getSteps());
 			ps.setString(4, running.getMemo());
 			ps.setDate(5, running.getRunDate());
+			ps.setString(6, running.getTimeSlot());
+			ps.setInt(7, running.getWeather());
 
 			ps.executeUpdate();
 
 		} catch (SQLException e) {
-			// TODO: handle exception
 			e.printStackTrace();
 		}
 	}
@@ -55,13 +56,14 @@ public class RunningDaoImpl implements RunningDao {
 				running.setSteps(rs.getInt("steps"));
 				running.setMemo(rs.getString("memo"));
 				running.setRunDate(rs.getDate("run_date"));
+				running.setTimeSlot(rs.getString("time_slot"));
+				running.setWeather(rs.getInt("weather"));
 
 				list.add(running);
 
 			}
 
 		} catch (SQLException e) {
-			// TODO: handle exception
 			e.printStackTrace();
 		}
 
@@ -88,7 +90,7 @@ public class RunningDaoImpl implements RunningDao {
 	// 4.UPDATE
 	@Override //インタフェースのメソッドを実装してることを明確にするため記載
 	public void update(Running running) {
-		String sql = "UPDATE running_db.running SET distance = ?, duration = ?, steps = ?, memo = ?, run_date = ? WHERE id = ? ";
+		String sql = "UPDATE running_db.running SET distance = ?, duration = ?, steps = ?, memo = ?, run_date = ?, time_slot = ?, weather = ? WHERE id = ? ";
 
 		try (Connection conn = DBUtil.getConnection();
 				PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -97,7 +99,10 @@ public class RunningDaoImpl implements RunningDao {
 			ps.setInt(3, running.getSteps());
 			ps.setString(4, running.getMemo());
 			ps.setDate(5, running.getRunDate());
-			ps.setInt(6, running.getId());
+			ps.setString(6, running.getTimeSlot());
+			ps.setInt(7, running.getWeather());
+
+			ps.setInt(8, running.getId());
 
 			ps.executeUpdate();
 

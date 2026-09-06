@@ -1,6 +1,8 @@
 package view;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -22,8 +24,11 @@ public class RunningFrame extends JFrame { // ← extends JFrame を書いた時
 	// 削除用エリアのパーツ
 	public JButton deleteButton = new JButton("削除する");
 
+	// 編集ボタン
+	public JButton editButton = new JButton("編集する");
+
 	// カラム名
-	public String[] columnNames = { "日付", "距離", "時間", "歩数", "メモ", };
+	public String[] columnNames = { "日付", "距離", "時間", "歩数", "時間帯", "天候", "メモ" };
 
 	// データの管理モデルを作成
 	// columnNamesの要素数6で、列数がここで決まる
@@ -46,20 +51,19 @@ public class RunningFrame extends JFrame { // ← extends JFrame を書いた時
 		setLayout(new BorderLayout(10, 10)); // 部品同士を10ずつ空ける 内部コンポのみ
 
 		// 2.操作エリア（画面上部：NORTHに配置）
-		JPanel topPanel = new JPanel(new BorderLayout(10, 10)); // こいつから見た内部のWEST EASTの間隔のこと
-		topPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10)); // コンポの内部間隔
+		JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5)); // ボタンの間隔や並びの設定
+		topPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0)); // トップパネルひとかたまりでの余白
+
+		// ボタンのサイズを統一
+		Dimension buttonSize = new Dimension(150, 30);
+		openDialogButton.setPreferredSize(buttonSize);
+		deleteButton.setPreferredSize(buttonSize);
+		editButton.setPreferredSize(buttonSize);
 
 		// 左側に新規追加画面ボタン
-		topPanel.add(openDialogButton, BorderLayout.WEST);
-
-		// 右側に削除ボタン topPanel.add～では1機能しか配置できないので、ID記載＆ボタンのため新規コンポ作成
-		// JPanel はデフォルトで FlowLayout（横並び）になるため、
-		// ラベル・入力欄・ボタンの3つが左から順に横1列で並ぶ
-		JPanel deletePanel = new JPanel();
-		//		deletePanel.add(new JLabel("削除対象ID："));
-		//		deletePanel.add(idField);
-		deletePanel.add(deleteButton);
-		topPanel.add(deletePanel, BorderLayout.EAST);
+		topPanel.add(openDialogButton);
+		topPanel.add(deleteButton);
+		topPanel.add(editButton);
 
 		// 上部に配置
 		add(topPanel, BorderLayout.NORTH);
