@@ -2,11 +2,14 @@ package controller;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.JOptionPane;
 
@@ -82,7 +85,28 @@ public class RunningController {
 			}
 		});
 
-		// 5.画面立ち上げ時に起動して全件表示
+		// 5-1.親画面の体重入力欄でエンターキーを押すと再計算
+		frame.weightField.addActionListener(e -> updateListView()); // addActionListenerでエンターキーを察知
+
+		/*省略しないとこの書き方
+		 * frame.weightField.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				updateListView();
+			}
+		});
+		*/
+
+		// 5-2.親画面の体重入力欄でフォーカスが外れた時に再計算
+		frame.weightField.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent e) {
+				updateListView();
+			}
+
+		});
+
+		// 6.画面立ち上げ時に起動して全件表示
 		updateListView();
 	}
 
@@ -238,6 +262,70 @@ public class RunningController {
 
 			// ビューのモデルに追加
 			frame.tableModel.addRow(rowData);
+		}
+
+		// 合計値を取得して、mapから取りだす
+		Map<String, Double> map = dao.getRunningSummary();
+		Double totalDistance = map.get("totalDistance"); // マップタイトルから合計値を取得
+		Double totalDuration = map.get("totalDuration"); // マップタイトルから合計値を取得
+		Double activeMonth = map.get("activeMonth");
+
+		// -----------------------------------------------------------------
+		// 1. 1キロペースの計算・表示
+		// -----------------------------------------------------------------
+		// Doubleは箱なのでnullがありえる。中に数値が無いときにNullPointerException (アプリ強制終了)を防ぐ。
+		// totalDistance Double型を0で割るとDouble.POSITIVE_INFINITY（無限大）になってしまう仕様
+		if (totalDistance != null && totalDistance > 0 && totalDuration != null && totalDuration > 0) {
+			Double avgPace = totalDuration / totalDistance;
+			String paceLabel = String.format("1キロペース: %.1f （分/km）", avgPace); // %はプレースホルダ .1は小数点第一位まで fは少数を指す
+			frame.paceLabel.setText(paceLabel);
+		} else {
+			// データが0件のとき、または全削除したとき初期化
+			frame.paceLabel.setText("1キロペース: - （分/km）");
+		}
+
+		// -----------------------------------------------------------------
+		// 2. 月平均距離の計算・表示
+		// -----------------------------------------------------------------
+		if (totalDistance != null && totalDistance > 0 && activeMonth != null && activeMonth > 0) {
+			Double avgMonthDistance = totalDistance / activeMonth;
+			String distanceLabel = String.format("月平均距離: %.1f （km/月）", avgMonthDistance); // avgMonthDistanceがDoubleなのでfしか指定できない
+			frame.distanceLabel.setText(distanceLabel);
+		} else {
+			// データが0件のとき、または全削除したとき初期化
+			frame.distanceLabel.setText("月平均距離: - （km/月）");
+		}
+
+		// -----------------------------------------------------------------
+		// 3. 消費カロリーの計算・表示
+		// -----------------------------------------------------------------
+		Double weight = 0.0;
+		// 前後の空白を除去（スペースのみの入力は空文字 "" になる）
+		String weightStr = frame.weightField.getText().trim();
+		try {
+			weight = Double.parseDouble(weightStr);
+		} catch (NumberFormatException e) {
+			// 空文字や数値以外の文字列が入った場合に安全に 0.0 をセットする
+			weight = 0.0;
+		}
+
+		if (totalDistance != null && totalDistance > 0 && weight != null && weight > 0) {
+			Double kcal = totalDistance * weight;
+			String caloriesLabel = String.format("累計消費カロリー: %.1f （kcal）", kcal);
+			frame.caloriesLabel.setText(caloriesLabel);
+		} else {
+			frame.caloriesLabel.setText("累計消費カロリー: - （kcal）");
+		}
+
+		// -----------------------------------------------------------------
+		// 4. 通算走行時間の計算・表示
+		// -----------------------------------------------------------------
+		if (totalDuration != null && totalDuration > 0) {
+			Double totalHours = totalDuration / 60;
+			String durationLabel = String.format("通算走行時間: %.1f （時間）", totalHours);
+			frame.timeLabel.setText(durationLabel);
+		} else {
+			frame.timeLabel.setText("通算走行時間: - （時間）");
 		}
 
 	}

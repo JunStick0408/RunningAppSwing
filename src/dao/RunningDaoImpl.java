@@ -5,7 +5,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import model.Running;
 
@@ -110,6 +112,35 @@ public class RunningDaoImpl implements RunningDao {
 			e.printStackTrace();
 		}
 
+	}
+
+	// SUM
+	@Override
+	public Map<String, Double> getRunningSummary() {
+		Map<String, Double> map = new HashMap<>();
+		map.put("totalDistance", 0.0);
+		map.put("totalDuration", 0.0);
+		map.put("activeMonth", 0.0);
+
+		String sql = "SELECT SUM(distance) AS total_distance, "
+				+ "SUM(duration) AS total_duration, "
+				+ "COUNT(DISTINCT DATE_FORMAT(run_date, '%Y-%m')) AS active_month " // 月平均なので8月だったらいくらあろうが1のみカウントしたい。日数は要らないので DATE_FORMATで整形し、DISTINCTで重複排除したものをカウント
+				+ "FROM running_db.running";
+
+		try (Connection conn = DBUtil.getConnection();
+				PreparedStatement ps = conn.prepareStatement(sql);
+				ResultSet rs = ps.executeQuery()) {
+
+			while (rs.next()) { // if(rs.next())でもOK！合計されて次の行が無いから
+				map.put("totalDistance", rs.getDouble("total_distance")); // ASと名前を付けておくことで列指定が容易になる。
+				map.put("totalDuration", rs.getDouble("total_duration")); // ASと名前を付けておくことで列指定が容易になる。
+				map.put("activeMonth", rs.getDouble("active_month"));
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return map;
 	}
 
 }
