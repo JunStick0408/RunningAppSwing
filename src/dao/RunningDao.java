@@ -1,6 +1,7 @@
 package dao;
 
 import java.util.List;
+import java.util.Map;
 
 import model.Running;
 
@@ -15,4 +16,10 @@ public interface RunningDao {
 
 	//　DELETE
 	void delete(int id);
+
+	// UPDATE
+	void update(Running running);
+
+	// 合計距離と合計時間をまとめて取得 ※戻り値が必要
+	Map<String, Double> getRunningSummary(); // stringに合計値のタイトル、Doubleに合計値を入れることで取り出しやすくする
 }
