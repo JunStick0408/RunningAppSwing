@@ -23,13 +23,16 @@ public class RunningFrame extends JFrame { // ← extends JFrame を書いた時
 	public JTextField idField = new JTextField(5);
 
 	//	新規登録ダイアログを開くボタン
-	public JButton openDialogButton = new JButton("新規記録を追加する");
+	public JButton openDialogButton = new JButton("追加する");
 
 	// 削除用エリアのパーツ
 	public JButton deleteButton = new JButton("削除する");
 
 	// 編集ボタン
 	public JButton editButton = new JButton("編集する");
+
+	// 複写ボタン
+	public JButton copyButton = new JButton("複写する");
 
 	// 1キロペース
 	public JLabel paceLabel = new JLabel("1キロペース: - （分/km）"); // これは仮置きの文字でコントローラー側で上書きする
@@ -69,15 +72,17 @@ public class RunningFrame extends JFrame { // ← extends JFrame を書いた時
 		topPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0)); // トップパネルひとかたまりでの余白
 
 		// ボタンのサイズを統一
-		Dimension buttonSize = new Dimension(150, 30);
+		Dimension buttonSize = new Dimension(100, 30);
 		openDialogButton.setPreferredSize(buttonSize);
 		deleteButton.setPreferredSize(buttonSize);
 		editButton.setPreferredSize(buttonSize);
+		copyButton.setPreferredSize(buttonSize);
 
 		// 左側に新規追加画面ボタン
 		topPanel.add(openDialogButton);
-		topPanel.add(deleteButton);
 		topPanel.add(editButton);
+		topPanel.add(copyButton);
+		topPanel.add(deleteButton);
 
 		// 上部に配置
 		add(topPanel, BorderLayout.NORTH);
